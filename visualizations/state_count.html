@@ -1,0 +1,69 @@
+<html>
+<head>
+<meta property="og:type" content="website"/>
+<meta property="og:image" content="http://save-science.org/aftfos_scripts/visualizations/og_map.png"/>
+<meta property="og:title" content="Save Science Messages Map"/>
+<meta property="og:url" content="http://save-science.org/aftfos_scripts/visualizations/state_count.html"/>
+<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
+<script src="datamaps.usa.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript">
+function make_map() {
+	$.ajax({
+	  url: 'http://save-science.org:5001/get-state-counts',
+	  type: 'get',
+	  dataType: 'json',
+	  success: function(state_data) {
+	  	// make data object for datamaps
+	  	var data_obj = {};
+	  	for (var state in state_data) {
+	  	  if (!state_data.hasOwnProperty(state)) {
+		  	continue;
+		  }
+		  count = parseInt(state_data[state]);
+		  if (count == 0) {
+		  	fill_color_key = 'NONE';
+		  }
+		  else {
+		  	fill_color_key = 'COLOR';
+		  }
+		  data_obj[state] = {fillKey:fill_color_key, numberOfThings:count};
+		}
+		var map = new Datamap( { 
+    						element: document.getElementById('map_container'),
+    						scope: 'usa',
+    						fills: {
+					            HIGH: '#afafaf',
+					            LOW: '#123456',
+					            MEDIUM: 'blue',
+					            NONE: '#AFAFAF',
+					            COLOR: '#4789CD',
+					            UNKNOWN: 'rgb(0,0,0)',
+					            defaultFill: '#AFAFAF'
+        					},
+        					geographyConfig: {
+					            popupTemplate: function(geo, data) {
+					                return ['<div class="hoverinfo"><strong>',
+					                        'Number of submissions in ' + geo.properties.name,
+					                        ': ' + data.numberOfThings,
+					                        '</strong></div>'].join('');
+					            }
+					        },
+					        data: data_obj
+    					});
+	  },
+	  error: function (xhr, status) {
+      	alert("error");
+      }
+	});
+}
+</script>
+</head>
+<body>
+<div id="map_container" style="position: relative; width: 1000px; height: 600px;"></div>
+<script>
+	make_map();
+</script>
+</body>
+</html>
